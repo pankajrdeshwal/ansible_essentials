@@ -15,17 +15,16 @@ Learn to execute **Ansible ad-hoc commands** for performing quick administrative
 
 ### 🪶 Step 1: Configure Localhost in Inventory  
 
-Open your inventory file and add the private IP addresses:  
+Open your inventory file:  
 ```bash
 sudo vi /etc/ansible/hosts
 ```
-text
 
-node1 ansible_ssh_host=<node1-private-ip> ansible_ssh_user=ec2-user
-
-node2 ansible_ssh_host=<node2-private-ip> ansible_ssh_user=ec2-user
-
-``````
+Add this line (press **INSERT** to edit):  
+```text
+localhost ansible_connection=local
+```
+📝 *This tells Ansible to treat your local system as a managed node so you can test commands locally.*  
 
 Save and exit using `ESCAPE + :wq!`  
 
@@ -131,7 +130,15 @@ ansible node1 -m copy -a "src=test.txt dest=/home/ansible-new/test" -b
 
 ### 🧹 Step 4: Cleanup  
 
-Delete AWS EC2 instances to avoid billing !!!
+Remove localhost entry after testing:  
+```bash
+sudo vi /etc/ansible/hosts
+```
+Delete this line:  
+```text
+localhost ansible_connection=local
+```
+Save and exit using `:wq!`  
 
 ---
 
