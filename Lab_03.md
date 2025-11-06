@@ -19,7 +19,39 @@ mkdir ansible-labs
 cd ansible-labs
 ```
 
-### Step 2: Create Apache Installation Playbook 🛠️
+### Step 2: Create Index HTML File 🛠️
+
+#### Install Git (if not already installed) 🛠️
+```bash
+sudo yum install git -y
+```
+
+#### Download index.html from Repository 🛠️
+Use curl to download the index.html file from the repository:
+```bash
+curl -o index.html https://raw.githubusercontent.com/ibnehussain/ansible_essentials/main/index.html
+```
+
+#### Alternative: Create index.html manually 🛠️
+If you prefer to create the file manually:
+```bash
+cat > index.html << EOF
+<html>
+  <body>
+  <h1>Welcome to Ansible Training from CloudThat</h1>
+  </body>
+</html>
+EOF
+```
+
+#### Verify the File ✅
+Check that the index.html file was created:
+```bash
+ls -l index.html
+cat index.html
+```
+
+### Step 3: Create Apache Installation Playbook 🛠️
 
 #### Add Task 1: Install httpd using yum 🛠️
 Create `install-apache-pb.yml` with the following content:
@@ -107,38 +139,6 @@ ansible-playbook install-apache-pb.yml
 Verify the service status:
 ```bash
 ansible all -a "systemctl status httpd" --become
-```
-
-### Step 3: Create Index HTML File 🛠️
-
-#### Install Git (if not already installed) 🛠️
-```bash
-sudo yum install git -y
-```
-
-#### Download index.html from Repository 🛠️
-Use curl to download the index.html file from the repository:
-```bash
-curl -o index.html https://raw.githubusercontent.com/ibnehussain/ansible_essentials/main/index.html
-```
-
-#### Alternative: Create index.html manually 🛠️
-If you prefer to create the file manually:
-```bash
-cat > index.html << EOF
-<html>
-  <body>
-  <h1>Welcome to Ansible Training from CloudThat</h1>
-  </body>
-</html>
-EOF
-```
-
-#### Verify the File ✅
-Check that the index.html file was created:
-```bash
-ls -l index.html
-cat index.html
 ```
 
 ### Step 4: Playbook Validation 🛠️
