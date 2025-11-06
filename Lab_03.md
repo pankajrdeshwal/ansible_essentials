@@ -51,7 +51,23 @@ ls -l index.html
 cat index.html
 ```
 
-### Step 3: Create Apache Installation Playbook 🛠️
+### Step 3: Playbook Validation 🛠️
+
+Before creating our playbook tasks, let's understand validation commands:
+
+#### Check Playbook Syntax ✅
+This command will check YAML syntax (we'll use it after creating the playbook):
+```bash
+ansible-playbook install-apache-pb.yml --syntax-check
+```
+
+#### Perform a Dry Run ✅
+This command shows what would happen without making changes (we'll use it before execution):
+```bash
+ansible-playbook install-apache-pb.yml --check
+```
+
+### Step 4: Create Apache Installation Playbook 🛠️
 
 #### Add Task 1: Install httpd using yum 🛠️
 Create `install-apache-pb.yml` with the following content:
@@ -68,8 +84,12 @@ Create `install-apache-pb.yml` with the following content:
         state: latest
 ```
 
-#### Deploy Task 1 🚀
-Run the playbook to execute Task 1:
+#### Validate and Deploy Task 1 🚀
+First, validate the syntax:
+```bash
+ansible-playbook install-apache-pb.yml --syntax-check
+```
+Then run the playbook to execute Task 1:
 ```bash
 ansible-playbook install-apache-pb.yml
 ```
@@ -130,38 +150,17 @@ Update `install-apache-pb.yml` to include the following task:
         state: started
 ```
 
-#### Deploy Task 4 🚀
-Run the playbook to execute Task 4:
+#### Final Validation and Deployment 🚀
+Perform a dry run to see what the complete playbook would do:
+```bash
+ansible-playbook install-apache-pb.yml --check
+```
+Run the complete playbook:
 ```bash
 ansible-playbook install-apache-pb.yml
 ```
 #### Verify Service Status ✅
 Verify the service status:
-```bash
-ansible all -a "systemctl status httpd" --become
-```
-
-### Step 4: Playbook Validation 🛠️
-
-#### Check Playbook Syntax ✅
-Check playbook syntax before execution:
-```bash
-ansible-playbook install-apache-pb.yml --syntax-check
-```
-#### Perform a Dry Run ✅
-Perform a dry run:
-```bash
-ansible-playbook install-apache-pb.yml --check
-```
-
-### Step 5: Execute the Playbook 🚀
-
-Run the playbook:
-```bash
-ansible-playbook install-apache-pb.yml
-```
-#### Verify Installation ✅
-Verify the installation by checking if Apache is running:
 ```bash
 ansible all -a "systemctl status httpd" --become
 ```
@@ -171,7 +170,7 @@ Test the web server:
 ansible all -a "curl -s localhost"
 ```
 
-### Step 6: Uninstall Apache Web Server 🛠️
+### Step 5: Uninstall Apache Web Server 🛠️
 
 #### Create Uninstall Playbook 🛠️
 Create `uninstall-apache-pb.yml` to remove Apache:
@@ -211,7 +210,7 @@ Check if package is removed:
 ansible all -a "yum list installed httpd" --become
 ```
 
-### Step 7: Cleanup 🧹
+### Step 6: Cleanup 🧹
 
 Make sure to delete AWS EC2 instances to avoid billing!
 
