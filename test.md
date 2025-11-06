@@ -203,8 +203,8 @@ Use `--become` or `-b` for root-level tasks
 
 ## Troubleshooting 🛠️
 
-⚠️ **Permission errors?** → Add `--become` or check sudo access
-⚠️ **Host unreachable?** → Verify SSH connectivity
+⚠️ **Permission errors?** → Add `--become` or check sudo access  
+⚠️ **Host unreachable?** → Verify SSH connectivity  
 ⚠️ **Command skipped?** → Ensure correct inventory and host names
 
 ---
