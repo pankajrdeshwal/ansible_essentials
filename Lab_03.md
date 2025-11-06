@@ -141,7 +141,20 @@ ls -l index.html
 cat index.html
 ```
 
-### Step 4: Execute the Playbook 🚀
+### Step 4: Playbook Validation 🛠️
+
+#### Check Playbook Syntax ✅
+Check playbook syntax before execution:
+```bash
+ansible-playbook install-apache-pb.yml --syntax-check
+```
+#### Perform a Dry Run ✅
+Perform a dry run:
+```bash
+ansible-playbook install-apache-pb.yml --check
+```
+
+### Step 5: Execute the Playbook 🚀
 
 Run the playbook:
 ```bash
@@ -158,20 +171,47 @@ Test the web server:
 ansible all -a "curl -s localhost"
 ```
 
-### Step 5: Playbook Validation 🛠️
+### Step 6: Uninstall Apache Web Server 🛠️
 
-#### Check Playbook Syntax ✅
-Check playbook syntax before execution:
-```bash
-ansible-playbook install-apache-pb.yml --syntax-check
-```
-#### Perform a Dry Run ✅
-Perform a dry run:
-```bash
-ansible-playbook install-apache-pb.yml --check
+#### Create Uninstall Playbook 🛠️
+Create `uninstall-apache-pb.yml` to remove Apache:
+```yaml
+---
+- name: This play will uninstall apache web servers from all the hosts
+  hosts: all
+  become: yes
+  tasks:
+    - name: Task1 will stop the httpd service
+      service:
+        name: httpd
+        state: stopped
+    - name: Task2 will remove httpd package
+      yum:
+        name: httpd
+        state: absent
+    - name: Task3 will remove web files
+      file:
+        path: /var/www/html/index.html
+        state: absent
 ```
 
-### Step 6: Cleanup 🧹
+#### Execute Uninstall Playbook 🚀
+Run the uninstall playbook:
+```bash
+ansible-playbook uninstall-apache-pb.yml
+```
+
+#### Verify Uninstallation ✅
+Verify Apache has been removed:
+```bash
+ansible all -a "systemctl status httpd" --become
+```
+Check if package is removed:
+```bash
+ansible all -a "yum list installed httpd" --become
+```
+
+### Step 7: Cleanup 🧹
 
 Make sure to delete AWS EC2 instances to avoid billing!
 
@@ -189,6 +229,17 @@ ansible-playbook <playbook-name>.yml
 - `copy`: Copy files to managed nodes
 - `file`: Manage file attributes
 - `service`: Manage services
+
+✅ **YUM Module State Options:**
+
+| State | Description | Action |
+|-------|-------------|--------|
+| `present` | Ensures package is installed | Installs if not present, no update |
+| `installed` | Ensures package is installed | Same as `present` (interchangeable) |
+| `latest` | Ensures latest version is installed | Installs + updates to latest version |
+| `absent` | Ensures package is removed | Uninstalls the package |
+
+📝 **Note**: `present` and `installed` are used interchangeably and perform the same function. `latest` provides additional functionality by ensuring the most recent version is installed.
 
 ✅ **Privilege escalation:**
 Use `--become` or `-b` for root-level tasks
