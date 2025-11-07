@@ -1,165 +1,231 @@
-# Lab 5: Ansible Vault for Secrets Management
 
-## Objective
-Learn to secure sensitive data using Ansible Vault encryption and decryption features.
-
-## Prerequisites
-- Completed Labs 1-4
-- Understanding of variables and playbooks
-
-## Lab Steps
-
-### Step 1: Create Encrypted Variable File
-
-Create an encrypted variable file:
-```bash
-ansible-vault create secret_vars.yml
-```
-
-Enter a vault password when prompted. Add the following content:
-```yaml
 ---
-db_password: MySecretPassword123
-api_key: abc123def456ghi789
-admin_password: SuperSecretAdmin
-```
 
-### Step 2: View Encrypted File Content
+## 🧪 **Lab 5: Working with Ansible Facts**
 
-View the encrypted file (requires password):
-```bash
-ansible-vault view secret_vars.yml
-```
-
-Try to view with cat (shows encrypted content):
-```bash
-cat secret_vars.yml
-```
-
-### Step 3: Edit Encrypted Variables
-
-Edit the encrypted file:
-```bash
-ansible-vault edit secret_vars.yml
-```
-
-Add a new variable:
-```yaml
-ssh_private_key: |
-  -----BEGIN RSA PRIVATE KEY-----
-  MIIEpAIBAAKCAQEA...
-  -----END RSA PRIVATE KEY-----
-```
-
-### Step 4: Create Playbook Using Vault Variables
-
-Create `vault-demo-playbook.yml`:
-```yaml
 ---
-- name: Vault variables demo
-  hosts: localhost
-  become: yes
-  vars_files:
-    - secret_vars.yml
-  vars:
-    app_name: secure_app
-    config_path: /etc/secure_app
-  tasks:
-    - name: Create application directory
-      file:
-        path: "{{ config_path }}"
-        state: directory
-        mode: '0750'
-    
-    - name: Create configuration file with secrets
-      copy:
-        content: |
-          [database]
-          password={{ db_password }}
-          
-          [api]
-          key={{ api_key }}
-          
-          [admin]
-          password={{ admin_password }}
-        dest: "{{ config_path }}/app.conf"
-        mode: '0600'
-    
-    - name: Display configuration file location
-      debug:
-        msg: "Configuration created at {{ config_path }}/app.conf"
-```
 
-### Step 5: Run Playbook with Vault
+### **Objective**
 
-Execute playbook with vault password prompt:
+In this lab, you will:
+
+* Understand what **Ansible Facts** are.
+* Learn how to **view**, **use**, and **filter** them in playbooks.
+* Use **facts** to make your playbook dynamic based on system details.
+
+---
+
+### **Background**
+
+**Ansible Facts** are system information collected automatically from managed nodes using the **`setup` module**.
+They include details like:
+
+* OS version, distribution, IP addresses, hostname, memory, CPU, and more.
+
+Facts make your automation **smart** — you can write tasks that behave differently depending on the system.
+
+---
+
+### **Task 1: Display All Facts of a Managed Node**
+
+
+
+1. **Create a folder for this lab**
+
+   ```bash
+   mkdir facts && cd facts
+   ```
+
+2. **Run the setup module to collect facts**
+
+   ```bash
+   ansible all -m setup
+   ```
+
+   **Explanation:**
+
+   * `setup` is a built-in module that gathers all system facts from each managed host.
+   * The output is in **JSON format**, showing hundreds of key-value pairs such as:
+
+     ```
+     "ansible_distribution": "Amazon",
+     "ansible_os_family": "RedHat",
+     "ansible_hostname": "ip-172-31-22-230"
+     ```
+
+   💡 You can filter facts using `-a 'filter=<pattern>'`.
+   Examples:
+
+   ```bash
+   ansible all -m setup -a 'filter=ansible_distribution*'
+   ```
+
+   ```bash
+   ansible all -m setup -a "filter=ansible_os_family"
+   ```
+
+   ```bash
+   ansible all -m setup -a "filter=ansible_memory_mb"
+   ```
+
+   ```bash
+   ansible all -m setup -a "filter=ansible_default_ipv4"
+   ```
+
+---
+
+### **Task 2: Create a Playbook to Display Selected Facts**
+
+1. **Create a playbook file**
+
+   ```bash
+   vi display-facts.yml
+   ```
+
+2. **Add the following content (press `i` to INSERT):**
+
+   ```yaml
+   ---
+   - name: Display system facts using debug module
+     hosts: all
+     gather_facts: yes
+     tasks:
+       - name: Show OS distribution
+         debug:
+           msg: "Operating System: {{ ansible_distribution }}"
+
+       - name: Show Hostname
+         debug:
+           msg: "Hostname of this node is: {{ ansible_hostname }}"
+
+       - name: Show IP Address
+         debug:
+           msg: "IP Address: {{ ansible_default_ipv4.address }}"
+   ```
+
+   **Explanation:**
+
+   * `gather_facts: yes` → automatically collects facts at the beginning of play execution.
+   * `debug:` module → prints values on the screen.
+   * Facts like `ansible_distribution`, `ansible_hostname`, and `ansible_default_ipv4.address` are predefined.
+
+3. **Save and exit**
+   Press `ESC` → `:wq!` → `Enter`.
+
+4. **Run the playbook**
+
+   ```bash
+   ansible-playbook display-facts.yml
+   ```
+
+   You should see output like:
+
+   ```
+   TASK [Show OS distribution]
+   ok: [node1] => {
+       "msg": "Operating System: Amazon"
+   }
+   TASK [Show Hostname]
+   ok: [node1] => {
+       "msg": "Hostname of this node is: ip-172-31-22-230"
+   }
+   TASK [Show IP Address]
+   ok: [node1] => {
+       "msg": "IP Address: 172.31.22.230"
+   }
+   ```
+
+---
+
+### **Task 3: Use Facts in Conditional Tasks**
+
+Now we’ll use facts to make decisions — for example, install a package **only** if the OS family is `RedHat`.
+
+1. **Create a new playbook**
+
+   ```bash
+   vi conditional-facts.yml
+   ```
+
+2. **Add the following content:**
+
+   ```yaml
+   ---
+   - name: Install web server based on OS family
+     hosts: all
+     become: yes
+     gather_facts: yes
+     tasks:
+       - name: Install Apache if OS family is RedHat
+         yum:
+           name: httpd
+           state: present
+         when: ansible_os_family == "RedHat"
+
+       - name: Install Apache2 if OS family is Debian
+         apt:
+           name: apache2
+           state: present
+           update_cache: yes
+         when: ansible_os_family == "Debian"
+   ```
+
+   **Explanation:**
+
+   * `when:` applies a conditional check.
+   * Based on the OS type (RedHat or Debian), it installs the correct package.
+   * Facts like `ansible_os_family` help make the playbook OS-independent.
+
+3. **Save and exit**
+   Press `ESC` → `:wq!` → `Enter`.
+
+4. **Run the playbook**
+
+   ```bash
+   ansible-playbook conditional-facts.yml
+   ```
+
+   It will automatically choose the correct installation task based on the node’s OS.
+
+---
+
+### **Task 4: Store Facts in a File (Optional but Useful)**
+
+If you want to save the facts of each node for later reference:
+
 ```bash
-ansible-playbook vault-demo-playbook.yml --ask-vault-pass
+ansible all -m setup --tree ./facts_output
 ```
 
-Run with vault password file:
+**Explanation:**
+
+* The `--tree` option stores each host’s facts in a separate JSON file inside `facts_output/`.
+
+Example output files:
+
+```
+facts_output/node1
+facts_output/node2
+```
+
+You can open them with:
+
 ```bash
-echo "your_vault_password" > .vault_pass
-```
-```bash
-chmod 600 .vault_pass
-```
-```bash
-ansible-playbook vault-demo-playbook.yml --vault-password-file .vault_pass
+cat facts_output/node1
 ```
 
-### Step 6: Vault File Operations
+---
 
-Decrypt a vault file:
-```bash
-ansible-vault decrypt secret_vars.yml
-```
+### ✅ **Summary**
 
-Encrypt an existing file:
-```bash
-ansible-vault encrypt secret_vars.yml
-```
+| Concept             | Description                                                    |
+| ------------------- | -------------------------------------------------------------- |
+| **Facts**           | Automatically gathered system information (via `setup` module) |
+| **gather_facts**    | Boolean in playbooks to enable/disable fact collection         |
+| **debug module**    | Used to display fact values                                    |
+| **Conditional use** | Facts can drive OS-aware automation                            |
+| **Filtering**       | Use filters to retrieve only specific facts                    |
 
-Change vault password:
-```bash
-ansible-vault rekey secret_vars.yml
-```
+---
 
-### Step 7: Multiple Vault IDs
-
-Create vault with specific ID:
-```bash
-ansible-vault create --vault-id prod@prompt prod_secrets.yml
-```
-
-Create dev environment vault:
-```bash
-ansible-vault create --vault-id dev@prompt dev_secrets.yml
-```
-
-Run playbook with multiple vault IDs:
-```bash
-ansible-playbook vault-demo-playbook.yml --vault-id prod@prompt --vault-id dev@prompt
-```
-
-## Key Concepts Learned
-- Creating encrypted files with `ansible-vault create`
-- Viewing and editing encrypted content
-- Using vault variables in playbooks with `vars_files:`
-- Running playbooks with `--ask-vault-pass`
-- Vault password files for automation
-- Multiple vault IDs for different environments
-- File encryption and decryption operations
-
-## Security Best Practices
-- Never commit vault passwords to version control
-- Use different vault passwords for different environments
-- Set proper file permissions on vault password files
-- Regularly rotate vault passwords
-- Use vault IDs for better organization
-
-## Troubleshooting
-- Ensure correct vault password is provided
-- Check file permissions on vault files
-- Verify YAML syntax in encrypted files
-- Use `ansible-vault view` to debug encrypted content
+Would you like me to make this into a **Markdown (`.md`) lab document** for GitHub or classroom use (formatted with headers, code blocks, and emojis)?
