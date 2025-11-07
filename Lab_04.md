@@ -18,16 +18,48 @@
    mkdir file && cd file
    ```
 
-3. **Create the playbook file**
+3. **Create Index HTML File** 🛠️
+
+   ##### Install Git (if not already installed) 🛠️
+   ```bash
+   sudo yum install git -y
+   ```
+
+   ##### Download index.html from Repository 🛠️
+   Use curl to download the index.html file from the repository:
+   ```bash
+   curl -o index.html https://raw.githubusercontent.com/ibnehussain/ansible_essentials/main/index.html
+   ```
+
+   ##### Alternative: Create index.html manually 🛠️
+   If you prefer to create the file manually:
+   ```bash
+   cat > index.html << EOF
+   <html>
+     <body>
+     <h1>Welcome to Ansible Training from CloudThat</h1>
+     </body>
+   </html>
+   EOF
+   ```
+
+   ##### Verify the File ✅
+   Check that the index.html file was created:
+   ```bash
+   ls -l index.html
+   cat index.html
+   ```
+
+4. **Create the playbook file**
 
    ```bash
    vi implement-vars.yml
    ```
 
    We are using variables such as `hostname`, `package1`, `package2`, `portno`, and `path`.
-   Instead of hardcoding values directly, we’ll define them as variables to make the playbook reusable.
+   Instead of hardcoding values directly, we'll define them as variables to make the playbook reusable.
 
-4. **Add the following content (press `i` to enter INSERT mode):**
+5. **Add the following content (press `i` to enter INSERT mode):**
 
    ```yaml
    ---
@@ -64,16 +96,16 @@
    * The `service` module ensures the service is running.
    * The `copy` module transfers the HTML file to the web server’s document root.
 
-5. **Save and exit**
+6. **Save and exit**
    Press `ESC` → type `:wq!` → press `Enter`.
 
-6. **Run the playbook**
+7. **Run the playbook**
 
    ```bash
    ansible-playbook implement-vars.yml
    ```
 
-7. **Verify the web page**
+8. **Verify the web page**
 
    * Go to the **AWS Console**, copy the **Public IPv4 DNS** of your instance.
    * Paste it into a web browser.
