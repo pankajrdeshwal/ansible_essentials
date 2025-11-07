@@ -6,15 +6,10 @@
 
 ### **Task 1: Configuring Packages in Ansible Using Variables**
 
-1. **Navigate to your Ansible labs directory and prepare workspace**
+1. **Navigate to your Ansible labs directory**
 
    ```bash
    cd ~/ansible-labs/
-   ```
-
-   If the `ansible-labs` directory doesn't exist, create it first:
-   ```bash
-   mkdir -p ~/ansible-labs && cd ~/ansible-labs
    ```
 
 2. **Create a dedicated folder for variables practice**
@@ -27,19 +22,7 @@
 
 3. **Create Index HTML File** 🛠️
 
-   ##### Install Git (if not already installed) 🛠️
-   ```bash
-   sudo yum install git -y
-   ```
-
-   ##### Download index.html from Repository 🛠️
-   Use curl to download the index.html file from the repository:
-   ```bash
-   curl -o index.html https://raw.githubusercontent.com/ibnehussain/ansible_essentials/main/index.html
-   ```
-
-   ##### Alternative: Create index.html manually 🛠️
-   If you prefer to create the file manually:
+   Create the HTML file manually:
    ```bash
    cat > index.html << EOF
    <html>
@@ -50,8 +33,7 @@
    EOF
    ```
 
-   ##### Verify the File ✅
-   Check that the index.html file was created:
+   Verify the file was created:
    ```bash
    ls -l index.html
    cat index.html
