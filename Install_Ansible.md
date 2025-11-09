@@ -2,6 +2,8 @@
 
 ## **Automated Setup for AWS RHEL 9 EC2 Instance**
 
+> **📖 New to Ansible?** If you're new to Ansible and prefer a step-by-step manual installation to understand each component, we recommend following **[Lab 01](./Lab_01.md)** which provides a comprehensive manual setup process with detailed explanations.
+
 This guide provides step-by-step instructions to quickly set up an Ansible Control Node using our automated installation script.
 
 ---
@@ -305,11 +307,9 @@ The script installs the following components:
 
 After successful installation:
 
-> **📖 New to Ansible?** If you're new to Ansible, we recommend following **[Lab 01](./Lab_01.md)** for a comprehensive step-by-step introduction to Ansible concepts and fundamentals.
-
-1. **Set up managed nodes:** Configure additional EC2 instances
+1. **Start with basic playbooks:** Create and run your first automation scripts
 2. **Explore other labs:** Progress through Labs 2-10
-3. **Build playbooks:** Start creating your own automation
+3. **Build advanced playbooks:** Develop complex automation workflows
 
 ---
 
