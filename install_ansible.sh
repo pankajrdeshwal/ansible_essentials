@@ -121,14 +121,14 @@ main() {
     if command_exists ansible; then
         print_warning "Ansible is already installed"
         ansible --version
-        read -p "Do you want to reinstall Ansible 8.5.0? (y/N): " -n 1 -r
+        read -p "Do you want to reinstall the latest stable version? (y/N): " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
-            sudo pip3 install ansible==8.5.0 --force-reinstall
+            sudo pip3 install ansible --force-reinstall
         fi
     else
-        print_status "Installing Ansible version 8.5.0..."
-        sudo pip3 install ansible==8.5.0
+        print_status "Installing latest stable version of Ansible..."
+        sudo pip3 install ansible
         print_success "Ansible installed successfully"
     fi
     

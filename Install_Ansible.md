@@ -254,7 +254,7 @@ The script installs the following components:
 |-----------|---------|---------|
 | **Python 3** | Latest available | Ansible runtime environment |
 | **pip3** | Latest | Python package manager |
-| **Ansible** | 8.5.0 | Infrastructure automation tool |
+| **Ansible** | Latest stable | Infrastructure automation tool |
 | **AWS CLI** | Latest | AWS command line interface |
 | **boto/boto3** | Latest | AWS SDK for Python |
 | **Amazon AWS Collection** | Latest | Ansible modules for AWS |

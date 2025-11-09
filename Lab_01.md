@@ -46,9 +46,9 @@ sudo pip3 install --upgrade pip
 sudo pip3 install awscli boto boto3
 ```
 
-#### Install Ansible (specific version)
+#### Install Ansible (latest stable version)
 ```bash
-sudo pip3 install ansible==8.5.0
+sudo pip3 install ansible
 ```
 
 #### Confirm installed Ansible details
