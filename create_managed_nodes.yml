@@ -1,0 +1,182 @@
+---
+# 🚀 Ansible Playbook: Create AWS EC2 Managed Nodes
+# 
+# Purpose: Automatically creates AWS EC2 instances to serve as Ansible managed nodes
+# Author: Ansible Essentials Lab
+# Date: November 2025
+#
+# Description:
+#   This playbook discovers the current EC2 control node's configuration and creates
+#   two identical EC2 instances in the same AWS environment. It automatically sets up
+#   SSH connectivity and provides the private IP addresses for inventory configuration.
+#
+# Prerequisites:
+#   - Running on an AWS EC2 instance (Ansible Control Node)
+#   - AWS CLI configured with appropriate permissions
+#   - Amazon AWS Ansible collection installed
+#   - EC2 permissions: RunInstances, DescribeInstances, CreateTags
+#
+# Usage:
+#   ansible-playbook create_managed_nodes.yml
+#
+# Output:
+#   - Creates 2 EC2 instances named 'managed-node-1' and 'managed-node-2'
+#   - Displays private IP addresses for inventory configuration
+#   - Sets up SSH key authentication automatically
+
+- hosts: localhost
+  connection: local
+
+  tasks:
+    - name: Get EC2 metadata token
+      shell: >
+        curl -X PUT "http://169.254.169.254/latest/api/token"
+        -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"
+      register: TOKEN
+
+    - name: Get region
+      shell: >
+        curl -H "X-aws-ec2-metadata-token:{{ TOKEN.stdout }}"
+        http://169.254.169.254/latest/meta-data/placement/region
+      register: region
+
+    - name: Get AMI ID
+      shell: >
+        curl -H "X-aws-ec2-metadata-token:{{ TOKEN.stdout }}"
+        http://169.254.169.254/latest/meta-data/ami-id
+      register: ami_id
+
+    - name: Get key pair name
+      shell: >
+        curl -H "X-aws-ec2-metadata-token:{{ TOKEN.stdout }}"
+        http://169.254.169.254/latest/meta-data/public-keys/ | cut -c 3-100
+      register: kp
+
+    - name: Get instance type
+      shell: >
+        curl -H "X-aws-ec2-metadata-token:{{ TOKEN.stdout }}"
+        http://169.254.169.254/latest/meta-data/instance-type
+      register: instance_type
+
+    - name: Get MAC address (cleaned)
+      shell: >
+        curl -H "X-aws-ec2-metadata-token:{{ TOKEN.stdout }}"
+        http://169.254.169.254/latest/meta-data/network/interfaces/macs/ | head -n1 | tr -d '/'
+      register: mac
+
+    - name: Get subnet ID
+      shell: >
+        curl -H "X-aws-ec2-metadata-token:{{ TOKEN.stdout }}"
+        http://169.254.169.254/latest/meta-data/network/interfaces/macs/{{ mac.stdout }}/subnet-id
+      register: subnet
+
+    - name: Get security group ID
+      shell: >
+        curl -H "X-aws-ec2-metadata-token:{{ TOKEN.stdout }}"
+        http://169.254.169.254/latest/meta-data/network/interfaces/macs/{{ mac.stdout }}/security-group-ids
+      register: secgrp
+
+    - name: Generate SSH keypair
+      openssh_keypair:
+        force: yes
+        path: /home/ec2-user/.ssh/id_rsa
+
+    - name: Read public key
+      shell: cat /home/ec2-user/.ssh/id_rsa.pub
+      register: pubkey
+
+    - name: Launch EC2 instances
+      amazon.aws.ec2_instance:
+        key_name: "{{ kp.stdout }}"
+        instance_type: "{{ instance_type.stdout }}"
+        image:
+          id: "{{ ami_id.stdout }}"
+        wait: true
+        region: "{{ region.stdout }}"
+        name: "{{ item }}"
+        tags:
+          Name: "{{ item }}"
+          Purpose: "Ansible Managed Node"
+          CreatedBy: "ansible-automation"
+        network:
+          assign_public_ip: true
+          subnet_id: "{{ subnet.stdout }}"
+          security_groups: ["{{ secgrp.stdout }}"]
+        user_data: |
+          #!/bin/bash
+          echo "{{ pubkey.stdout }}" >> /home/ec2-user/.ssh/authorized_keys
+          # Set hostname to match instance name
+          hostnamectl set-hostname {{ item }}
+      loop:
+        - managed-node-1
+        - managed-node-2
+      register: ec2var
+
+    - name: Create /etc/ansible if not exists
+      file:
+        path: /etc/ansible
+        state: directory
+      become: yes
+    
+    - name: Display instance creation summary
+      debug:
+        msg: |
+          ✅ Successfully created {{ ec2var.results | length }} EC2 instances
+          
+          📋 Instance Details:
+          Region: {{ region.stdout }}
+          AMI ID: {{ ami_id.stdout }}
+          Instance Type: {{ instance_type.stdout }}
+          Subnet: {{ subnet.stdout }}
+          Security Group: {{ secgrp.stdout }}
+
+    - name: Show private IPs of created instances
+      debug:
+        msg: |
+          🖧 Private IP Addresses for Ansible Inventory:
+          
+          managed-node-1: {{ ec2var.results[0].instances[0].network_interfaces[0].private_ip_address | default('N/A') }}
+          managed-node-2: {{ ec2var.results[1].instances[0].network_interfaces[0].private_ip_address | default('N/A') }}
+          
+          📝 Next Steps:
+          1. Add these IPs to /etc/ansible/hosts:
+             [managed_nodes]
+             node1 ansible_ssh_host={{ ec2var.results[0].instances[0].network_interfaces[0].private_ip_address | default('N/A') }} ansible_ssh_user=ec2-user
+             node2 ansible_ssh_host={{ ec2var.results[1].instances[0].network_interfaces[0].private_ip_address | default('N/A') }} ansible_ssh_user=ec2-user
+          
+          2. Test connectivity:
+             ansible all -m ping
+          
+          🔑 SSH keys have been automatically configured for passwordless access!
+
+    - name: Create sample inventory file
+      copy:
+        content: |
+          # Ansible Inventory File
+          # Generated by create_managed_nodes.yml playbook
+          # Date: {{ ansible_date_time.iso8601 }}
+          
+          [managed_nodes]
+          node1 ansible_ssh_host={{ ec2var.results[0].instances[0].network_interfaces[0].private_ip_address | default('N/A') }} ansible_ssh_user=ec2-user
+          node2 ansible_ssh_host={{ ec2var.results[1].instances[0].network_interfaces[0].private_ip_address | default('N/A') }} ansible_ssh_user=ec2-user
+          
+          [webservers]
+          node1
+          node2
+          
+          [all:vars]
+          ansible_ssh_private_key_file=/home/ec2-user/.ssh/id_rsa
+          ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+        dest: /home/ec2-user/managed_nodes_inventory
+        mode: '0644'
+      
+    - name: Final success message
+      debug:
+        msg: |
+          🎉 EC2 Managed Nodes Created Successfully!
+          
+          📁 Files Created:
+          - SSH keys: /home/ec2-user/.ssh/id_rsa (private) & id_rsa.pub (public)
+          - Sample inventory: /home/ec2-user/managed_nodes_inventory
+          
+          🚀 Ready to start managing your infrastructure with Ansible!
