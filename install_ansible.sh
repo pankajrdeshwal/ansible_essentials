@@ -121,11 +121,6 @@ main() {
     if command_exists ansible; then
         print_warning "Ansible is already installed"
         ansible --version
-        read -p "Do you want to reinstall the latest stable version? (y/N): " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            sudo pip3 install ansible --force-reinstall
-        fi
     else
         print_status "Installing latest stable version of Ansible..."
         sudo pip3 install ansible
