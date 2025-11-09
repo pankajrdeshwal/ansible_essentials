@@ -11,7 +11,6 @@ By the end of this lab, you will be able to:
 - Understand what Ansible Vault is and why it’s used
 - Create and manage encrypted files using Vault
 - Use Vault-encrypted variables inside playbooks
-- Manage access securely across users and environments
 
 ---
 
@@ -343,7 +342,7 @@ ansible-vault decrypt plain_vars.yml
 
 ---
 
-## 📊 **Advanced Summary Table**
+## 📊 **Advanced Section Summary Table**
 
 | Step | Action | Key Command | Purpose |
 |------|--------|-------------|---------|
@@ -354,15 +353,43 @@ ansible-vault decrypt plain_vars.yml
 
 ---
 
-## 🚀 **Production Best Practices**
+## 📖 **Cloud Secret Management Overview**
 
-### **Security Recommendations:**
-1. **Never commit vault passwords** to version control
-2. **Use different passwords** for different environments
-3. **Rotate vault passwords** regularly
-4. **Store vault passwords** in secure key management systems
-5. **Use vault IDs** for multi-environment setups
+For production environments, consider integrating Ansible Vault with cloud secret management services:
 
+### **🔑 Popular Cloud Secret Managers:**
+- **AWS Secrets Manager**: Securely store and retrieve vault passwords
+- **Azure Key Vault**: Centralized secret management for Azure environments  
+- **HashiCorp Vault**: Enterprise-grade secret management across platforms
+- **Google Secret Manager**: Secure secret storage for GCP workloads
+
+### **🏢 Multi-User Access Management:**
+When multiple users share control nodes, implement proper access controls:
+- Use dedicated service accounts for vault access
+- Implement role-based permissions (RBAC)
+- Store vault passwords in secure, shared locations
+- Regular password rotation policies
+
+### **💡 Best Practices:**
+- Never commit vault passwords to version control
+- Use different vault passwords for different environments
+- Implement automated vault password rotation
+- Monitor vault access and usage patterns
+
+---
+
+## ✅ Summary
+
+| Command | Description |
+|----------|-------------|
+| `ansible-vault create file.yml` | Create and encrypt a new file |
+| `ansible-vault encrypt file.yml` | Encrypt an existing file |
+| `ansible-vault decrypt file.yml` | Decrypt a file |
+| `ansible-vault view file.yml` | View encrypted file |
+| `ansible-vault edit file.yml` | Edit encrypted file |
+| `ansible-vault rekey file.yml` | Change the vault password |
+| `ansible-playbook play.yml --ask-vault-pass` | Run with prompt |
+| `ansible-playbook play.yml --vault-password-file` | Run with password file |
 
 ---
 
