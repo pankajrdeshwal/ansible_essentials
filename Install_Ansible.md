@@ -11,8 +11,8 @@ This guide provides step-by-step instructions to quickly set up an Ansible Contr
 Before starting, ensure you have:
 
 ✅ **AWS EC2 Instance Requirements:**
-- **OS:** Red Hat Enterprise Linux 9 (RHEL 9) / CentOS 9 / Rocky Linux 9
-- **Instance Type:** t2.micro or larger
+- **OS:** Red Hat Enterprise Linux (RHEL 9/10) / CentOS 9 / Rocky Linux 9
+- **Instance Type:** t2.micro/t3.micro or larger
 - **Region:** us-east-1 (recommended)
 - **Security Groups:** SSH (port 22) and HTTP (port 80) access
 - **Key Pair:** For SSH access
@@ -104,93 +104,110 @@ aws configure
 
 ---
 
-### **Step 6: Set Up Managed Nodes (Optional)**
+### **Step 6: Create AWS EC2 Managed Nodes**
 
-If you have managed nodes to configure, edit the Ansible inventory:
+Navigate to your working directory and execute the managed nodes creation playbook:
 
 ```bash
-sudo vi /etc/ansible/hosts
+cd ~/ansible-labs
 ```
 
-**Add your managed nodes:**
+```bash
+ansible-playbook create_managed_nodes.yml
+```
+
+**What this playbook will do:**
+- ✅ Automatically discover your current EC2 configuration
+- ✅ Create 2 new EC2 instances (`managed-node-1` and `managed-node-2`)
+- ✅ Configure SSH keys for passwordless access
+- ✅ Set up hostnames automatically
+- ✅ Generate an inventory file (`managed_nodes_inventory`)
+- ✅ Display private IP addresses for your reference
+
+**Expected output:**
+```
+🎉 EC2 Managed Nodes Created Successfully!
+
+📁 Files Created:
+- SSH keys: /home/ec2-user/.ssh/id_rsa (private) & id_rsa.pub (public)
+- Sample inventory: /home/ec2-user/managed_nodes_inventory
+
+🚀 Ready to start managing your infrastructure with Ansible!
+```
+
+---
+
+### **Step 7: Verify Managed Nodes Setup**
+
+After the playbook completes successfully, verify your managed nodes:
+
+#### **Check the generated inventory file:**
+
+```bash
+cat ~/managed_nodes_inventory
+```
+
+**Example inventory content:**
 ```ini
-[webservers]
+[managed_nodes]
 node1 ansible_ssh_host=172.31.14.113 ansible_ssh_user=ec2-user
 node2 ansible_ssh_host=172.31.2.229 ansible_ssh_user=ec2-user
+
+[webservers]
+node1
+node2
+
+[all:vars]
+ansible_ssh_private_key_file=/home/ec2-user/.ssh/id_rsa
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 ```
+
+#### **Verify EC2 instances in AWS Console:**
+- Check EC2 Dashboard for 2 new instances
+- Names: `managed-node-1` and `managed-node-2`
+- Status: Running with public and private IP addresses
 
 ---
 
-### **Step 7: Configure Hostnames on Managed Nodes**
-
-Before testing connectivity, set proper hostnames on your managed nodes (if you have them configured):
-
-#### **SSH into Node 1 and set hostname:**
-
-```bash
-ssh ec2-user@<Replace-Node-1-IP>
-```
-
-**Example:**
-```bash
-ssh ec2-user@172.31.14.113
-```
-
-**Set hostname on Node 1:**
-```bash
-sudo hostnamectl set-hostname managed-node-1
-```
-
-**Exit from Node 1:**
-```bash
-exit
-```
-
-#### **SSH into Node 2 and set hostname:**
-
-```bash
-ssh ec2-user@<Replace-Node-2-IP>
-```
-
-**Example:**
-```bash
-ssh ec2-user@172.31.2.229
-```
-
-**Set hostname on Node 2:**
-```bash
-sudo hostnamectl set-hostname managed-node-2
-```
-
-**Exit from Node 2:**
-```bash
-exit
-```
-
-> **💡 Note:** Replace the IP addresses with your actual managed node IPs. This step ensures proper identification of your managed nodes in Ansible operations.
-
----
-
-### **Step 8: Test Your Installation**
+### **Step 8: Test Your Ansible Setup**
 
 **Test Ansible installation:**
 ```bash
 ansible --version
 ```
 
-**Test connectivity to managed nodes (if configured):**
+**Test connectivity to managed nodes using the generated inventory:**
 ```bash
-ansible all -m ping
+ansible all -m ping -i ~/managed_nodes_inventory
 ```
 
-**Navigate to working directory:**
-```bash
-cd ~/ansible-labs
+**Expected successful output:**
+```
+node1 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+node2 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
 ```
 
-**Run the sample playbook:**
+**Alternative: Test specific groups:**
 ```bash
-ansible-playbook ansible_script.yaml
+ansible managed_nodes -m ping -i ~/managed_nodes_inventory
+ansible webservers -m ping -i ~/managed_nodes_inventory
+```
+
+**Run a quick command on all managed nodes:**
+```bash
+ansible all -m shell -a "hostname" -i ~/managed_nodes_inventory
 ```
 
 ---
@@ -212,12 +229,24 @@ Upon successful installation, you should see:
 
 📋 NEXT STEPS:
 1. Configure AWS credentials: aws configure
-2. Set up managed nodes in: sudo vi /etc/ansible/hosts
-3. Test connectivity: ansible all -m ping
+2. Create managed nodes: ansible-playbook create_managed_nodes.yml
+3. Test connectivity: ansible all -m ping -i managed_nodes_inventory
 4. Navigate to working directory: cd ~/ansible-labs
-5. Run sample playbook: ansible-playbook ansible_script.yaml
+5. Start managing your infrastructure with Ansible!
 
 🚀 Your Ansible Control Node is ready!
+```
+
+**After running the managed nodes creation playbook:**
+
+```
+🎉 EC2 Managed Nodes Created Successfully!
+
+📁 Files Created:
+- SSH keys: /home/ec2-user/.ssh/id_rsa (private) & id_rsa.pub (public)
+- Sample inventory: /home/ec2-user/managed_nodes_inventory
+
+🚀 Ready to start managing your infrastructure with Ansible!
 ```
 
 ---
