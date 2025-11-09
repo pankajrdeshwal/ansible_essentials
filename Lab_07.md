@@ -92,11 +92,6 @@ cat secret_vars.yml
 ls -la secret_vars.yml
 ```
 
-**Generate new checksum to see the change:**
-```bash
-md5sum secret_vars.yml
-```
-
 **View just the header of the encrypted file:**
 ```bash
 head -n 3 secret_vars.yml
@@ -165,10 +160,15 @@ ok: [localhost] => {
 
 ## Step 5️⃣: Use a Vault Password File 
 
-If you don’t want to enter the password each time, store it in a file:
+If you don't want to enter the password each time, store it in a file:
 
+**Create vault password file:**
 ```bash
 echo "MyVaultPassword" > ~/.vault_pass.txt
+```
+
+**Set secure permissions:**
+```bash
 chmod 600 ~/.vault_pass.txt
 ```
 
