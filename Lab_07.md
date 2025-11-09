@@ -218,31 +218,6 @@ You'll be prompted for the **old password** and then the **new password**.
 
 ---
 
-### **Step 10: Inspect and Checksum the Encrypted File**
-
-**Purpose:** Learn how to view the structure of an encrypted file and verify its integrity.
-
-**View the first few lines of the vault file:**
-```bash
-head -n 5 secret_vars.yml
-```
-
-**Generate a checksum:**
-```bash
-sha256sum secret_vars.yml > secret_vars.yml.sha256
-```
-
-**Display checksum value:**
-```bash
-cat secret_vars.yml.sha256
-```
-
-**Expected Output:**  
-- The file begins with `$ANSIBLE_VAULT;1.1;AES256`
-- A unique SHA-256 checksum is saved for integrity verification
-
----
-
 ### **Step 11: Corrupt the Vault File (Intentional Tampering)**
 
 ### **🔒 Before You Begin - Create Backup**
@@ -354,59 +329,6 @@ ansible-vault decrypt plain_vars.yml
 - After decryption, it returns to normal YAML
 
 **💡 Learning:** Vault can protect existing plaintext files quickly and restore them later when needed.
-
----
-
-### **Step 15: Multi-Environment Vault Management**
-
-**Purpose:** Manage different vault files for different environments using Vault IDs.
-
-Create environment-specific vault files:
-
-```bash
-# Create dev environment variables
-cat > dev_vars.yml << EOF
-db_host: dev-db.example.com
-db_port: 3306
-debug: true
-EOF
-```
-
-```bash
-# Create prod environment variables
-cat > prod_vars.yml << EOF
-db_host: prod-db.example.com
-db_port: 3306
-debug: false
-EOF
-```
-
-```bash
-# Encrypt with different vault IDs
-ansible-vault encrypt --vault-id dev@prompt dev_vars.yml
-ansible-vault encrypt --vault-id prod@prompt prod_vars.yml
-```
-
-Create a multi-environment playbook:
-```bash
-cat > multi_env_play.yml << EOF
----
-- name: Multi-Environment Vault Demo
-  hosts: localhost
-  vars_files:
-    - "{{ env }}_vars.yml"
-  tasks:
-    - name: Display environment info
-      debug:
-        msg: "Environment: {{ env }}, DB Host: {{ db_host }}, Debug: {{ debug }}"
-EOF
-```
-
-```bash
-# Run for different environments
-ansible-playbook multi_env_play.yml --vault-id dev@prompt -e "env=dev"
-ansible-playbook multi_env_play.yml --vault-id prod@prompt -e "env=prod"
-```
 
 ---
 
