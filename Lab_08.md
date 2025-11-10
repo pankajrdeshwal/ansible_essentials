@@ -24,6 +24,9 @@ This lab helps you understand and implement:
 
 ```bash
 mkdir ~/ansible-lab
+```
+
+```bash
 cd ~/ansible-lab
 ```
 
@@ -113,10 +116,13 @@ ansible-playbook handlers_conditionals_loops.yml
 
 ```bash
 sudo systemctl status httpd
+```
+
+```bash
 cat /var/www/html/index.html
 ```
 
-You should see:
+**You should see:**
 
 ```
 Welcome to Ansible Lab
