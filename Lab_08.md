@@ -114,6 +114,8 @@ ansible-playbook handlers_conditionals_loops.yml
 
 ## 🔍 Step 5: Verify on Target Node
 
+### **Direct Verification on Target:**
+
 ```bash
 sudo systemctl status httpd
 ```
@@ -127,6 +129,28 @@ cat /var/www/html/index.html
 ```
 Welcome to Ansible Lab
 This is served from <hostname>
+```
+
+### **Ad-hoc Commands from Control Node:**
+
+**Verify Apache service status:**
+```bash
+ansible all -m service -a "name=httpd state=started" --become
+```
+
+**Check installed packages:**
+```bash
+ansible all -m package -a "name=git state=present" --become
+```
+
+**Verify web content:**
+```bash
+ansible all -m shell -a "curl -s localhost"
+```
+
+**Check Apache is listening on port 80:**
+```bash
+ansible all -m shell -a "netstat -tulnp | grep :80"
 ```
 
 ---
