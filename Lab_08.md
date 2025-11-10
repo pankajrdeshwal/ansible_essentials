@@ -51,9 +51,6 @@ Paste the following content:
     copy_dest: /var/www/html/index.html
 
   tasks:
-    # -----------------------------
-    # 1️⃣ Install Apache (httpd)
-    # -----------------------------
     - name: Install Apache Web Server
       yum:
         name: "{{ package_name }}"
@@ -61,9 +58,6 @@ Paste the following content:
       notify: Restart Apache   # Handler trigger
       when: ansible_facts['os_family'] == "RedHat"  # Conditional example
 
-    # -----------------------------
-    # 2️⃣ Copy a sample web file
-    # -----------------------------
     - name: Deploy sample web page
       copy:
         content: |
@@ -72,9 +66,6 @@ Paste the following content:
         dest: "{{ copy_dest }}"
       notify: Restart Apache
 
-    # -----------------------------
-    # 3️⃣ Install multiple utilities using Loops
-    # -----------------------------
     - name: Install useful packages
       yum:
         name: "{{ item }}"
@@ -84,9 +75,6 @@ Paste the following content:
         - curl
         - wget
 
-  # -----------------------------
-  # 🔔 Handler section
-  # -----------------------------
   handlers:
     - name: Restart Apache
       service:
