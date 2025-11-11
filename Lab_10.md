@@ -1,10 +1,8 @@
----
 
 # 🧪 Lab 10: Ansible Roles - Organization and Reusability
 
 **Objective:** Understand and create Ansible Roles using modern naming conventions to deploy a web server with reusable components.
 
----
 
 ## 🎯 **What are Ansible Roles?**
 
