@@ -1,493 +1,232 @@
-# Lab 10: Ansible Roles - Organization and Reusability
+---
 
-## Objective
-Learn to create, organize, and use Ansible roles for modular and reusable automation code.
+# 🧪 Lab 10: Ansible Roles - Organization and Reusability
 
-## Prerequisites
-- Completed Labs 1-9
-- Understanding of playbooks, variables, templates, and handlers
+**Objective:** Understand and create Ansible Roles using modern naming conventions to deploy a web server with reusable components.
 
-## Lab Steps
+---
 
-### Step 1: Understanding Role Structure
+## 🎯 **What are Ansible Roles?**
 
-Create a role directory structure:
+* Ansible Roles are a way to **organize and reuse** playbook components
+* They provide a **standardized directory structure** for tasks, variables, files, and handlers
+* Roles make your automation **modular, maintainable, and shareable**
+* Follow **modern naming conventions** using `ansible.builtin.*` modules
+
+**Benefits:**
+- 📦 **Modular**: Break complex playbooks into manageable pieces
+- 🔄 **Reusable**: Use the same role across multiple projects
+- 🎯 **Organized**: Standardized structure for easy maintenance
+
+---
+
+## � **Lab Setup**
+
+### **Step 1: Create Project Directory**
+
 ```bash
-mkdir -p roles/webserver/{tasks,handlers,templates,files,vars,defaults,meta}
+mkdir ansible-role-lab
 ```
 
-Explore the created structure:
 ```bash
-tree roles/
+cd ansible-role-lab
 ```
 
-### Step 2: Create a Webserver Role
+---
 
-Create the main tasks file `roles/webserver/tasks/main.yml`:
+## 🏗️ **Create Role Structure**
+
+### **Step 2: Generate Role Skeleton**
+
+```bash
+ansible-galaxy init roles/webserver
+```
+
+**Generated Structure:**
+
+```
+roles/webserver/
+├── defaults/
+│   └── main.yml
+├── files/
+├── handlers/
+│   └── main.yml
+├── meta/
+│   └── main.yml
+├── tasks/
+│   └── main.yml
+├── templates/
+├── tests/
+├── vars/
+│   └── main.yml
+```
+
+---
+
+## ⚙️ **Role Implementation**
+
+### **Step 3: Define Role Variables**
+
+**File:** `roles/webserver/vars/main.yml`
+
 ```yaml
 ---
-# Main tasks for webserver role
-- name: Install Apache packages
-  yum:
-    name: "{{ webserver_packages }}"
-    state: present
-  notify: restart apache
-
-- name: Create document root directory
-  file:
-    path: "{{ apache_document_root }}"
-    state: directory
-    owner: "{{ apache_user }}"
-    group: "{{ apache_group }}"
-    mode: '0755'
-
-- name: Deploy Apache configuration
-  template:
-    src: httpd.conf.j2
-    dest: "{{ apache_config_file }}"
-    backup: yes
-    owner: root
-    group: root
-    mode: '0644'
-  notify: restart apache
-
-- name: Deploy virtual host configuration
-  template:
-    src: vhost.conf.j2
-    dest: "{{ apache_vhost_dir }}/{{ item.name }}.conf"
-    owner: root
-    group: root
-    mode: '0644'
-  loop: "{{ virtual_hosts }}"
-  when: virtual_hosts is defined
-  notify: restart apache
-
-- name: Create virtual host document roots
-  file:
-    path: "{{ item.document_root }}"
-    state: directory
-    owner: "{{ apache_user }}"
-    group: "{{ apache_group }}"
-    mode: '0755'
-  loop: "{{ virtual_hosts }}"
-  when: virtual_hosts is defined
-
-- name: Deploy index files for virtual hosts
-  template:
-    src: index.html.j2
-    dest: "{{ item.document_root }}/index.html"
-    owner: "{{ apache_user }}"
-    group: "{{ apache_group }}"
-    mode: '0644'
-  loop: "{{ virtual_hosts }}"
-  when: virtual_hosts is defined
-
-- name: Start and enable Apache service
-  service:
-    name: "{{ apache_service }}"
-    state: started
-    enabled: yes
-
-- name: Configure firewall for web services
-  firewalld:
-    service: "{{ item }}"
-    permanent: yes
-    state: enabled
-  loop:
-    - http
-    - https
-  notify: reload firewall
-  when: configure_firewall | default(true)
+web_package: httpd
+web_service: httpd
+web_page: index.html
 ```
 
-Create default variables `roles/webserver/defaults/main.yml`:
-```yaml
 ---
-# Default variables for webserver role
-webserver_packages:
-  - httpd
-  - mod_ssl
 
-apache_service: httpd
-apache_user: apache
-apache_group: apache
-apache_config_file: /etc/httpd/conf/httpd.conf
-apache_document_root: /var/www/html
-apache_vhost_dir: /etc/httpd/conf.d
-apache_port: 80
-apache_ssl_port: 443
+### **Step 4: Create HTML Content**
 
-# Default virtual hosts
-virtual_hosts:
-  - name: default
-    server_name: "{{ ansible_fqdn }}"
-    document_root: "{{ apache_document_root }}"
-    port: "{{ apache_port }}"
+**File:** `roles/webserver/files/index.html`
 
-configure_firewall: true
-server_admin: webmaster@localhost
-```
-
-Create handlers `roles/webserver/handlers/main.yml`:
-```yaml
----
-# Handlers for webserver role
-- name: restart apache
-  service:
-    name: "{{ apache_service }}"
-    state: restarted
-
-- name: reload apache
-  service:
-    name: "{{ apache_service }}"
-    state: reloaded
-
-- name: reload firewall
-  service:
-    name: firewalld
-    state: reloaded
-```
-
-### Step 3: Create Role Templates
-
-Create Apache configuration template `roles/webserver/templates/httpd.conf.j2`:
-```apache
-# Apache Configuration - Generated by Ansible
-ServerRoot /etc/httpd
-Listen {{ apache_port }}
-{% if apache_ssl_port is defined %}
-Listen {{ apache_ssl_port }} ssl
-{% endif %}
-
-ServerName {{ ansible_fqdn | default('localhost') }}
-ServerAdmin {{ server_admin }}
-
-# Basic security and performance settings
-ServerTokens Prod
-ServerSignature Off
-KeepAlive On
-MaxKeepAliveRequests 100
-KeepAliveTimeout 15
-
-# Directory settings
-<Directory />
-    Options FollowSymLinks
-    AllowOverride None
-    Require all denied
-</Directory>
-
-<Directory "{{ apache_document_root }}">
-    Options Indexes FollowSymLinks
-    AllowOverride None
-    Require all granted
-</Directory>
-
-# Default document settings
-DirectoryIndex index.html index.htm
-
-# Logging
-ErrorLog /var/log/httpd/error_log
-LogLevel warn
-LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
-CustomLog /var/log/httpd/access_log combined
-
-# Load modules
-LoadModule rewrite_module modules/mod_rewrite.so
-LoadModule ssl_module modules/mod_ssl.so
-
-# Include additional configurations
-IncludeOptional conf.d/*.conf
-```
-
-Create virtual host template `roles/webserver/templates/vhost.conf.j2`:
-```apache
-# Virtual Host: {{ item.name }}
-<VirtualHost *:{{ item.port | default(apache_port) }}>
-    ServerName {{ item.server_name }}
-    DocumentRoot {{ item.document_root }}
-    
-    ErrorLog /var/log/httpd/{{ item.name }}_error.log
-    CustomLog /var/log/httpd/{{ item.name }}_access.log combined
-    
-    <Directory "{{ item.document_root }}">
-        Options Indexes FollowSymLinks
-        AllowOverride All
-        Require all granted
-    </Directory>
-    
-    {% if item.ssl_enabled | default(false) %}
-    SSLEngine on
-    SSLCertificateFile {{ item.ssl_cert | default('/etc/ssl/certs/server.crt') }}
-    SSLCertificateKeyFile {{ item.ssl_key | default('/etc/ssl/private/server.key') }}
-    {% endif %}
-</VirtualHost>
-```
-
-Create index template `roles/webserver/templates/index.html.j2`:
 ```html
-<!DOCTYPE html>
 <html>
-<head>
-    <title>{{ item.server_name }}</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background: #f4f4f4; }
-        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header { color: #333; border-bottom: 3px solid #007acc; padding-bottom: 10px; }
-        .info { margin: 20px 0; padding: 15px; background: #e8f4fd; border-left: 4px solid #007acc; }
-        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ccc; color: #666; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Welcome to {{ item.server_name }}</h1>
-        </div>
-        
-        <div class="info">
-            <h3>Server Information</h3>
-            <ul>
-                <li><strong>Server Name:</strong> {{ item.server_name }}</li>
-                <li><strong>Document Root:</strong> {{ item.document_root }}</li>
-                <li><strong>Port:</strong> {{ item.port | default(apache_port) }}</li>
-                <li><strong>Host:</strong> {{ ansible_hostname }}</li>
-                <li><strong>IP Address:</strong> {{ ansible_default_ipv4.address | default('N/A') }}</li>
-                <li><strong>Deployed:</strong> {{ ansible_date_time.iso8601 }}</li>
-            </ul>
-        </div>
-        
-        <div class="footer">
-            <p>Managed by Ansible Role: webserver</p>
-            <p>Role deployed on {{ ansible_date_time.date }}</p>
-        </div>
-    </div>
-</body>
+  <body>
+    <h1>Welcome to Apache Webserver (Managed by Ansible Role)</h1>
+  </body>
 </html>
 ```
 
-### Step 4: Create Role Metadata
+---
 
-Create role metadata `roles/webserver/meta/main.yml`:
+### **Step 5: Define Role Tasks**
+
+**File:** `roles/webserver/tasks/main.yml`
+
 ```yaml
 ---
-galaxy_info:
-  role_name: webserver
-  author: Ansible Training
-  description: Apache web server configuration role
-  company: CloudThat
-  license: MIT
-  min_ansible_version: 2.9
-  
-  platforms:
-    - name: EL
-      versions:
-        - 7
-        - 8
-        - 9
-    - name: Fedora
-      versions:
-        - 34
-        - 35
+# tasks file for webserver
 
-  galaxy_tags:
-    - web
-    - apache
-    - httpd
-    - server
-
-dependencies: []
-```
-
-### Step 5: Create Playbook Using the Role
-
-Create `site.yml` to use the webserver role:
-```yaml
----
-- name: Deploy web servers using role
-  hosts: all
-  become: yes
-  vars:
-    virtual_hosts:
-      - name: site1
-        server_name: site1.example.com
-        document_root: /var/www/site1
-        port: 80
-      - name: site2
-        server_name: site2.example.com  
-        document_root: /var/www/site2
-        port: 80
-        ssl_enabled: false
-    
-    server_admin: admin@example.com
-    configure_firewall: true
-  
-  roles:
-    - webserver
-```
-
-### Step 6: Create Database Role
-
-Create database role structure:
-```bash
-mkdir -p roles/database/{tasks,handlers,templates,files,vars,defaults,meta}
-```
-
-Create database role tasks `roles/database/tasks/main.yml`:
-```yaml
----
-- name: Install MySQL packages
-  yum:
-    name: "{{ mysql_packages }}"
+- name: Install web server package
+  ansible.builtin.package:
+    name: "{{ web_package }}"
     state: present
 
-- name: Start and enable MySQL service
-  service:
-    name: "{{ mysql_service }}"
+- name: Copy homepage
+  ansible.builtin.copy:
+    src: "{{ web_page }}"
+    dest: /var/www/html/index.html
+  notify: Restart Web Service
+
+- name: Ensure web service is running and enabled
+  ansible.builtin.service:
+    name: "{{ web_service }}"
     state: started
     enabled: yes
-
-- name: Set MySQL root password
-  mysql_user:
-    name: root
-    password: "{{ mysql_root_password }}"
-    login_unix_socket: /var/lib/mysql/mysql.sock
-    state: present
-  when: mysql_root_password is defined
-
-- name: Create application databases
-  mysql_db:
-    name: "{{ item.name }}"
-    state: present
-    login_user: root
-    login_password: "{{ mysql_root_password }}"
-  loop: "{{ mysql_databases }}"
-  when: mysql_databases is defined
-
-- name: Create application users
-  mysql_user:
-    name: "{{ item.username }}"
-    password: "{{ item.password }}"
-    priv: "{{ item.database }}.*:ALL"
-    login_user: root
-    login_password: "{{ mysql_root_password }}"
-    state: present
-  loop: "{{ mysql_users }}"
-  when: mysql_users is defined
 ```
 
-Create database defaults `roles/database/defaults/main.yml`:
+---
+
+### **Step 6: Configure Handlers**
+
+**File:** `roles/webserver/handlers/main.yml`
+
 ```yaml
 ---
-mysql_packages:
-  - mysql-server
-  - mysql
-  - python3-PyMySQL
+# handlers file for webserver
 
-mysql_service: mysqld
-mysql_root_password: SecureRootPassword123
-
-mysql_databases:
-  - name: app_database
-  - name: test_database
-
-mysql_users:
-  - username: app_user
-    password: AppUserPassword123
-    database: app_database
-  - username: test_user
-    password: TestUserPassword123
-    database: test_database
+- name: Restart Web Service
+  ansible.builtin.service:
+    name: "{{ web_service }}"
+    state: restarted
 ```
 
-### Step 7: Multi-Role Playbook
+---
 
-Create `multi-role-site.yml`:
+## 📘 **Main Playbook**
+
+### **Step 7: Create Playbook**
+
+**File:** `site.yml`
+
 ```yaml
 ---
-- name: Deploy complete web application stack
-  hosts: all
+- name: Deploy Apache Web Server using Role
+  hosts: web
   become: yes
-  vars:
-    # Webserver role variables
-    virtual_hosts:
-      - name: webapp
-        server_name: webapp.example.com
-        document_root: /var/www/webapp
-        port: 80
-    
-    # Database role variables
-    mysql_root_password: VerySecurePassword123
-    mysql_databases:
-      - name: webapp_db
-      - name: webapp_test
-    
-    mysql_users:
-      - username: webapp_user
-        password: WebAppPassword123
-        database: webapp_db
-  
+
   roles:
-    - role: webserver
-      tags: web
-    - role: database
-      tags: db
-
-  post_tasks:
-    - name: Display deployment summary
-      debug:
-        msg: |
-          Deployment completed successfully:
-          - Web server configured with {{ virtual_hosts | length }} virtual host(s)
-          - Database server with {{ mysql_databases | length }} database(s)
-          - {{ mysql_users | length }} application user(s) created
+    - roles/webserver
 ```
 
-### Step 8: Execute Role-Based Playbooks
+---
 
-Run the webserver role:
+## ▶️ **Execute Role**
+
+### **Step 8: Run the Playbook**
+
 ```bash
-ansible-playbook site.yml
+ansible-playbook -i inventory site.yml
 ```
 
-Run with specific tags:
+---
+
+## 🔍 **Verify Deployment**
+
+### **Step 9: Test the Web Server**
+
+**Check service status:**
+
 ```bash
-ansible-playbook multi-role-site.yml --tags web
+sudo systemctl status httpd
 ```
 
-Run database role only:
-```bash
-ansible-playbook multi-role-site.yml --tags db
-```
+**Test in browser:**
 
-Check role syntax:
-```bash
-ansible-playbook site.yml --syntax-check
-```
+Open: `http://<your_target_ip>`
 
-List available roles:
-```bash
-ansible-galaxy list
-```
+**Expected Output:**
 
-## Key Concepts Learned
-- Role directory structure and organization
-- Creating reusable and modular roles
-- Role variables: defaults, vars, and precedence
-- Role templates, files, and handlers
-- Role metadata and dependencies
-- Multi-role playbooks and tag usage
-- Role-based deployment strategies
+*Welcome to Apache Webserver (Managed by Ansible Role)*
 
-## Best Practices
-- Keep roles focused on single responsibilities
-- Use meaningful variable names and defaults
-- Document role requirements and dependencies
-- Version control roles separately
-- Test roles independently before integration
-- Use tags for selective role execution
+---
 
-## Advanced Role Usage
-- Role dependencies in meta/main.yml
-- Role inheritance and composition  
-- Galaxy integration for role sharing
-- Role testing with molecule
-- Dynamic role inclusion with include_role
+## 🧠 **Key Takeaways**
+
+| Topic                  | Key Idea                                                |
+| Topic                  | Key Concept                                             |
+| ---------------------- | ------------------------------------------------------- |
+| `ansible.builtin.*`    | Modern module naming standard (since Ansible 2.10)    |
+| `roles:` section       | Automatically calls `tasks/main.yml`                   |
+| `notify:` + `handlers` | Restart service only when file changes                 |
+| `vars/`                | Role-specific variables                                 |
+| `files/`               | Stores static files for copying                        |
+| `reusability`          | Same role can be reused for Nginx by changing variables|
+
+---
+
+## ✅ **Lab Summary**
+
+You learned how to:
+
+1. Create and structure Ansible roles using modern conventions
+2. Organize tasks, variables, files, and handlers in a standardized way
+3. Use `ansible.builtin.*` modules for future-proof automation
+4. Deploy a complete web server using reusable role components
+5. Implement handlers for efficient service management
+
+---
+
+## 🎉 **Congratulations!**
+
+**🏆 Outstanding Achievement!** You've mastered Ansible Roles - the foundation of scalable automation!
+
+**🎯 Skills Unlocked:**
+- ✅ Modular automation design with roles
+- ✅ Standardized project organization
+- ✅ Reusable component development
+- ✅ Modern Ansible best practices
+
+**🚀 You're now ready to:**
+- Build enterprise-scale automation frameworks
+- Create shareable automation libraries
+- Implement complex multi-service deployments
+- Lead infrastructure-as-code initiatives
+
+**Amazing work! You've completed the Ansible essentials journey and are now equipped to automate at scale!** 🌟
+
+---
+

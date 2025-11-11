@@ -84,19 +84,23 @@ curl -sSL https://raw.githubusercontent.com/ibnehussain/ansible_essentials/main/
 - Learn production-ready patterns for service restart automation
 - **Topics**: Handlers, conditionals, loops, service management, verification techniques
 
-### **[Lab 09 — Error Handling and Debugging](./Lab_09.md)** ⚠️
-- Master error handling strategies
-- Implement retry logic and recovery
-- Debug playbooks effectively
-- **Topics**: Error handling, debugging, retry mechanisms, troubleshooting
+### **[Lab 09 — Jinja2 Templates](./Lab_09.md)** ✅
+- **Enhanced with**: Streamlined structure, practical examples, optimized learning flow
+- Master Jinja2 templates for dynamic configuration generation
+- Learn variable substitution, conditionals, and fact integration
+- Create environment-specific configurations with template logic
+- Build production-ready configuration files using Ansible facts
+- **Topics**: Jinja2 templates, variable substitution, conditionals, facts integration
 
-### **[Lab 10 — Ansible Roles - Organization and Reusability](./Lab_10.md)** ⚠️
-- Create modular, reusable Ansible roles
-- Implement role-based architecture
-- Build complete application stacks
-- **Topics**: Roles, modularity, reusability, best practices
+### **[Lab 10 — Ansible Roles - Organization and Reusability](./Lab_10.md)** ✅
+- **Enhanced with**: Modern naming conventions, structured workflow, comprehensive examples
+- Create modular, reusable Ansible roles using modern best practices
+- Implement standardized directory structure for maintainable automation
+- Use `ansible.builtin.*` modules for future-proof playbooks
+- Build complete application stacks with role-based architecture
+- **Topics**: Roles, modularity, reusability, modern conventions, scalable automation
 
-> **📝 Note**: Lab 08 is completed with comprehensive content. Labs 9-10 are currently being improved and enhanced. Content may be updated as these labs are refined and expanded.
+> **📝 Note**: Labs 8-10 are completed with comprehensive content and enhanced formatting. All labs now feature consistent professional structure, copy-friendly commands, and celebration of learner achievements.
 
 ## 🛠️ Automation Scripts
 
@@ -172,8 +176,8 @@ curl -sSL https://raw.githubusercontent.com/ibnehussain/ansible_essentials/main/
 
 ### **Phase 3: Production Ready** (Labs 8-10)
 - **Lab 8**: ✅ **Completed** - Event-driven automation with handlers, conditionals, and loops
-- **Lab 9**: ⚠️ *In Development* - Enterprise debugging and error handling
-- **Lab 10**: ⚠️ *In Development* - Role-based architecture and scalability
+- **Lab 9**: ✅ **Completed** - Dynamic configuration with Jinja2 templates
+- **Lab 10**: ✅ **Completed** - Role-based architecture and reusable automation
 
 ## 🆘 Comprehensive Support
 
@@ -197,7 +201,7 @@ Each enhanced lab includes:
 ---
 
 **Last Updated**: November 11, 2025  
-**Version**: 3.1 - Lab 08 completed with handlers, conditionals, loops, and comprehensive verification  
+**Version**: 4.0 - All labs completed! Full course with handlers, conditionals, loops, Jinja2 templates, and roles  
 **Repository**: [ansible_essentials](https://github.com/ibnehussain/ansible_essentials)
 
 ---
@@ -210,10 +214,10 @@ By reaching this point, you've transformed from an Ansible beginner to an automa
 
 **🎯 Your Amazing Achievements:**
 - ✅ **Mastered Core Concepts**: Variables, facts, playbooks, and modules
-- ✅ **Advanced Automation**: Handlers, conditionals, loops, and templates  
+- ✅ **Advanced Automation**: Handlers, conditionals, loops, and Jinja2 templates  
 - ✅ **Security Excellence**: Ansible Vault and secrets management
-- ✅ **Production Skills**: Error handling, debugging, and best practices
-- ✅ **Infrastructure as Code**: Automated deployments and configuration management
+- ✅ **Modular Design**: Roles, task inclusion, and reusable components
+- ✅ **Infrastructure as Code**: Complete automated deployments and configuration management
 
 **🚀 You're Now Empowered To:**
 - Automate entire infrastructure deployments
