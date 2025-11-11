@@ -104,6 +104,7 @@ ansible-playbook playbook.yml
 
 **Console Output:**
 
+*Expected output:*
 ```
 TASK [Display rendered file content] ******************************************
 ok: [localhost] => {
@@ -119,84 +120,21 @@ cat /tmp/welcome_message.txt
 
 *Expected rendered content:*
 
-```
-Hello Azhar 👋
+*Hello Azhar 👋*
 
-Welcome to the Development environment.
-This message was generated on 2025-11-11.
+*Welcome to the Development environment.*  
+*This message was generated on 2025-11-11.*
 
-Server Details:
-- Hostname: Control-Node
-- OS: RedHat
-- IP Address: 172.31.25.104
+*Server Details:*  
+*- Hostname: Control-Node*  
+*- OS: RedHat*  
+*- IP Address: 172.31.25.104*
 
-🧪  Safe to test and experiment here.
-```
+*🧪 Safe to test and experiment here.*
 
 ---
 
-## 🔄 7. **Test the Dynamic Nature**
-
-Change variable values in playbook:
-
-```yaml
-vars:
-  user_name: Trainer
-  env_type: Production
-```
-
-Re-run:
-
-```bash
-ansible-playbook playbook.yml
-```
-
-**Observe:**
-
-* The `env_type` value changes in the output.
-* Conditional message now shows "⚠️ Be careful! This is a production server."
-
----
-
-## 🔁 8. **Bonus: Add a Loop**
-
-Edit the same template to include a list of applications.
-
-**Updated `templates/welcome.j2`**
-
-```bash
-cat > templates/welcome.j2 << 'EOF'
-Hello {{ user_name }} 👋
-Welcome to {{ env_type }} environment.
-
-{% if applications is defined %}
-Applications Deployed:
-{% for app in applications %}
-- {{ app }}
-{% endfor %}
-{% else %}
-No applications listed.
-{% endif %}
-EOF
-```
-
-**Update Playbook Variables:**
-
-```yaml
-vars:
-  user_name: Azhar
-  env_type: Development
-  applications:
-    - Nginx
-    - PostgreSQL
-    - Redis
-```
-
-Run again — now it lists all apps dynamically.
-
----
-
-## 🧠 9. **Key Takeaways**
+## 🧠 7. **Key Takeaways**
 
 | Feature         | Example                   | Description                         |
 | --------------- | ------------------------- | ----------------------------------- |
@@ -215,7 +153,26 @@ You learned how to:
 1. Create and use Jinja2 templates in Ansible
 2. Use variables, facts, and conditionals inside templates
 3. Render templates dynamically and verify output
-4. Extend templates with loops for more advanced usage
+4. Build comprehensive configuration files using Jinja2 templates
+
+---
+
+## 🎉 **Congratulations!**
+
+**🏆 Outstanding Achievement!** You've successfully used Jinja2 templates in Ansible!
+
+**🎯 Skills Unlocked:**
+- ✅ Dynamic file generation with Jinja2
+- ✅ Variable substitution and fact integration  
+- ✅ Conditional logic in templates
+- ✅ Production-ready configuration management
+
+**🚀 You're now ready to:**
+- Build environment-specific deployments
+- Automate complex configuration scenarios
+- Apply template-driven infrastructure as code
+
+**Keep up the excellent work! Your Ansible automation journey is accelerating!** 🌟
 
 ---
 
