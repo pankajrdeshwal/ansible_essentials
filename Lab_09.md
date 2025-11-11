@@ -105,32 +105,11 @@ ansible-playbook playbook.yml
 **Console Output:**
 
 *Expected output:*
-```
-TASK [Display rendered file content] ******************************************
-ok: [localhost] => {
-    "msg": "Hello Azhar 👋\n\nWelcome to the Development environment.\nThis message was generated on 2025-11-11.\n\nServer Details:\n- Hostname: Control-Node\n- OS: RedHat\n- IP Address: 172.31.25.104\n\n🧪  Safe to test and experiment here."
-}
-```
 
-**Rendered File:**
-
-```bash
-cat /tmp/welcome_message.txt
-```
-
-*Expected rendered content:*
-
-*Hello Azhar 👋*
-
-*Welcome to the Development environment.*  
-*This message was generated on 2025-11-11.*
-
-*Server Details:*  
-*- Hostname: Control-Node*  
-*- OS: RedHat*  
-*- IP Address: 172.31.25.104*
-
-*🧪 Safe to test and experiment here.*
+*TASK [Display rendered file content] ******************************************  
+ok: [localhost] => {  
+    "msg": "Hello Azhar 👋\n\nWelcome to the Development environment.\nThis message was generated on 2025-11-11.\n\nServer Details:\n- Hostname: Control-Node\n- OS: RedHat\n- IP Address: 172.31.25.104\n\n🧪  Safe to test and experiment here."  
+}*
 
 ---
 
@@ -144,16 +123,6 @@ cat /tmp/welcome_message.txt
 | Facts           | `{{ ansible_hostname }}`  | Uses system data                    |
 | Template Module | `template:`               | Renders `.j2` files to remote nodes |
 
----
-
-## ✅ **Lab Summary**
-
-You learned how to:
-
-1. Create and use Jinja2 templates in Ansible
-2. Use variables, facts, and conditionals inside templates
-3. Render templates dynamically and verify output
-4. Build comprehensive configuration files using Jinja2 templates
 
 ---
 
