@@ -53,7 +53,7 @@
        hostname: all
        package1: httpd
        destination: /var/www/html/index.html
-       source: /home/ec2-user/variables-labs/index.html
+       source: /home/ec2-user/variables-lab/index.html
      tasks:
        - name: Install defined package
          yum:
