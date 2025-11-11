@@ -46,7 +46,7 @@ mkdir templates
 cat > templates/welcome.j2 << 'EOF'
 Hello {{ user_name }} 👋
 
-Welcome to the {{ environment }} environment.
+Welcome to the {{ env_type }} environment.
 This message was generated on {{ ansible_date_time.date }}.
 
 Server Details:
@@ -54,7 +54,7 @@ Server Details:
 - OS: {{ ansible_facts['os_family'] }}
 - IP Address: {{ ansible_default_ipv4.address }}
 
-{% if environment == "Production" %}
+{% if env_type == "Production" %}
 ⚠️  Be careful! This is a production server.
 {% else %}
 🧪  Safe to test and experiment here.
@@ -76,7 +76,7 @@ cat > playbook.yml << 'EOF'
   connection: local
   vars:
     user_name: Azhar
-    environment: Development
+    env_type: Development
 
   tasks:
     - name: Generate welcome file using Jinja2 template
@@ -140,7 +140,7 @@ Change variable values in playbook:
 ```yaml
 vars:
   user_name: Trainer
-  environment: Production
+  env_type: Production
 ```
 
 Re-run:
@@ -151,8 +151,8 @@ ansible-playbook playbook.yml
 
 **Observe:**
 
-* The `environment` value changes in the output.
-* Conditional message now shows “⚠️ Be careful! This is a production server.”
+* The `env_type` value changes in the output.
+* Conditional message now shows "⚠️ Be careful! This is a production server."
 
 ---
 
@@ -165,7 +165,7 @@ Edit the same template to include a list of applications.
 ```bash
 cat > templates/welcome.j2 << 'EOF'
 Hello {{ user_name }} 👋
-Welcome to {{ environment }} environment.
+Welcome to {{ env_type }} environment.
 
 {% if applications is defined %}
 Applications Deployed:
@@ -183,7 +183,7 @@ EOF
 ```yaml
 vars:
   user_name: Azhar
-  environment: Development
+  env_type: Development
   applications:
     - Nginx
     - PostgreSQL
